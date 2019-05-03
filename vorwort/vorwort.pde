@@ -1,4 +1,8 @@
+import java.util.*;
+
 ArrayList<Tile> tiles = new ArrayList<Tile>();
+Grid grid;
+
 int timestamps[] = new int[12];
 
 int pic_w = 480;
@@ -11,20 +15,34 @@ float random_display = random(1, 6);
 long big_timestamp = 0;
 long big_interval = 5000;
 
-void setup() {
-  size(1920, 960);
+String path = "img";
+File folder;
+String[] filenames;
+StringList files = new StringList();
+StringList available = new StringList();
+boolean foundFiles = false;
+List l = new ArrayList();
+File[] pics;
 
-  int id = 0;
-  for(int x = 0; x<4; x++) {
-    for(int y = 0; y<3; y++) {
-      //println(x + ", " + y);
-      tiles.add(new Tile(id, x, y));
-      id++;
-    }
-  }  
+
+void setup() {
+  size(960, 480);
+  grid = new Grid(width, height);
+  
+  pic_w = width/4;
+  pic_h = height/3;
+    
+  initList();
+  imagesToTiles();
+  available = duplicateList(files);
+  
 }
 
 void draw() {
+  grid.update();
+  grid.display();
+  
+  /*
   background(0);
   
   if(millis() - timestamp > random_interval) {
@@ -51,4 +69,6 @@ void draw() {
   rect(0, 0, 40, 40);
   fill(0);
   text((int)random_display, 20, 20);
+  */
+  
 }
