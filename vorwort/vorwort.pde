@@ -1,4 +1,3 @@
-//
 ArrayList<Tile> tiles = new ArrayList<Tile>();
 int timestamps[] = new int[12];
 
