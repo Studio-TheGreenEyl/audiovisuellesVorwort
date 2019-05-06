@@ -11,6 +11,9 @@ class Grid {
   static final int DEMO3 = 3;
   static final int DEMO4 = 4;
   
+  JSONArray patterns;
+  JSONObject jsonPattern = null;
+  
   int currentPattern = 0;
   int patternIndex = 12;
   IntList patternLinear;
@@ -31,13 +34,18 @@ class Grid {
     }  
   ;
   
+  
+  long timestamp = 0;
+  long interval = 250;
+  
   public Grid(int _w, int _h) {
+    patterns = loadJSONArray("data/patterns.json");
     initPatternList();
     w = _w;
     h = _h;
     pg = createGraphics(w, h);
     pg.beginDraw();
-    pg.background(255);
+    pg.background(0);
     pg.endDraw();
   }
   
@@ -53,32 +61,53 @@ class Grid {
       
       case PATTERN:
         // pick a new pattern
+        delay(1000);
         if(patternIndex >= patternLinear.size()) {
           patternIndex = 0;
-          currentPattern = (int)random(0, blackPatterns.length);
+          currentPattern = (int)random(0, patterns.size()-1);
+           
+          jsonPattern = patterns.getJSONObject(currentPattern); 
           initPatternList();
-          pg.beginDraw();
-          pg.background(0);
-          pg.endDraw();
         }
         state = STEP;
       break;
       
       case STEP:
-        if(patternIndex >= patternLinear.size()) {
-          state = PATTERN;
-          break;
-        }
-        int step = patternLinear.get(patternIndex);
-        int x = (int)step%4;
-        int y = (int)step/4;
+      if(millis() - timestamp > interval) {
+          if(patternIndex >= patternLinear.size()) {
+            state = PATTERN;
+            break;
+          }
         
-        //println("x= "+ x +" | y=" + y);
-        boolean empty = blackPatterns[currentPattern][x][y];
-        pg.beginDraw();
-        if(!empty) pg.image(tiles.get((int)random(0, tiles.size()-1)).getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
-        pg.endDraw();
-        patternIndex++;
+          timestamp = millis();
+          int step = patternLinear.get(patternIndex);
+          int x = (int)step%4;
+          int y = (int)step/4;
+          
+          JSONArray column = jsonPattern.getJSONArray("c"+x);
+          int[] values = column.getIntArray();
+          int field = values[y];
+         
+          pg.beginDraw();
+          
+          // invert black pattern
+          //field = (int)map(field, 0, 1, 1, 0);
+          
+          if(field == 1) {
+            pg.image(tiles.get((int)random(0, tiles.size()-1)).getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
+          }
+          else {
+            pg.push();
+            pg.fill(0);
+            pg.noStroke();
+            pg.rect(x*pic_w, y*pic_h, pic_w*1, pic_h*1);
+            pg.pop();
+          }
+          
+          pg.endDraw();
+          patternIndex++;
+        }
+        
         
       break;
       
@@ -88,8 +117,8 @@ class Grid {
   
   void display() {
     pg.beginDraw();
-    for(int x = 1; x<=4; x++) pg.line(x*pic_w, 0, x*pic_w, height);
-    for(int y = 1; y<=3; y++) pg.line(0, y*pic_h, width, y*pic_h);
+    //for(int x = 1; x<=4; x++) pg.line(x*pic_w, 0, x*pic_w, height);
+    //for(int y = 1; y<=3; y++) pg.line(0, y*pic_h, width, y*pic_h);
     
     //pg.image(tiles.get(0).getDisplay(), 0, 0, pic_w*1, pic_h*1);
     pg.endDraw();

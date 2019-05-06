@@ -1,4 +1,4 @@
-import java.util.*;
+ import java.util.*;
 
 ArrayList<Tile> tiles = new ArrayList<Tile>();
 Grid grid;
@@ -27,6 +27,7 @@ File[] pics;
 
 void setup() {
   size(960, 480);
+  background(0);
   grid = new Grid(width, height);
   
   pic_w = width/4;
