@@ -7,7 +7,7 @@ class Grid {
   
   static final int PATTERN = 0;
   static final int STEP = 1;
-  static final int DEMO2 = 2;
+  static final int CHANCE = 2;
   static final int DEMO3 = 3;
   static final int DEMO4 = 4;
   
@@ -17,23 +17,6 @@ class Grid {
   int currentPattern = 0;
   int patternIndex = 12;
   IntList patternLinear;
-  boolean blackPatterns[][][] = 
-    {
-      {
-        {false, true, false},
-        {true, false, true},
-        {false, true, false},
-        {true, false, true}
-      },
-      {
-        {true, false, true},
-        {true, true, false},
-        {false, false, true},
-        {true, true, false}
-      }
-    }  
-  ;
-  
   
   long timestamp = 0;
   long interval = 250;
@@ -49,15 +32,15 @@ class Grid {
     pg.endDraw();
   }
   
-  void initPatternList() {
-    patternLinear = new IntList();
-    for(int i = 0; i<12; i++) patternLinear.append(i);
-    patternLinear.shuffle();
-  }
+
   
   void update() {
     
     switch(state) {
+      
+      case CHANCE:
+        // 50:50 chance entweder in ein zufälliges pattern zu steuern oder ein set zu bekommen
+      break;
       
       case PATTERN:
         // pick a new pattern
@@ -73,7 +56,7 @@ class Grid {
       break;
       
       case STEP:
-      if(millis() - timestamp > interval) {
+        if(millis() - timestamp > interval) {
           if(patternIndex >= patternLinear.size()) {
             state = PATTERN;
             break;
@@ -123,6 +106,13 @@ class Grid {
     //pg.image(tiles.get(0).getDisplay(), 0, 0, pic_w*1, pic_h*1);
     pg.endDraw();
     image(pg, 0, 0);
+  }
+  
+  // shuffles the pattern so we can walk through it
+  void initPatternList() {
+    patternLinear = new IntList();
+    for(int i = 0; i<12; i++) patternLinear.append(i);
+    patternLinear.shuffle();
   }
   
 }
