@@ -3,6 +3,7 @@ import de.looksgood.ani.*;
 
 
 ArrayList<Tile> tiles = new ArrayList<Tile>();
+ArrayList<Composition> compositions = new ArrayList<Composition>();
 Grid grid;
 
 int timestamps[] = new int[12];
@@ -11,23 +12,15 @@ int pic_w = 480;
 int pic_h = 320;
 
 long timestamp = 0;
-long random_interval = 1000;
-float random_display = random(1, 6);
 
-long big_timestamp = 0;
-long big_interval = 5000;
-
-File folder;
-String[] filenames;
 StringList files = new StringList();
 StringList sets = new StringList();
-boolean foundFiles = false;
-List l = new ArrayList();
-File[] pics;
+
+boolean debug = true;
 
 
 void setup() {
-  size(960, 480);
+  size(1920, 960);
 
 
 
@@ -36,11 +29,13 @@ void setup() {
   
   pic_w = width/4;
   pic_h = height/3;
-    
-  files = initList("img", "jpg,JPG,png,PNG");
-  sets = initList("sets", "json");
-  imagesToTiles();
-  //available = duplicateList(files);
+  
+  files = grid.initList("img", "jpg,JPG,png,PNG,tif");
+  sets = grid.initList("sets", "json");
+  if(files == null) { println("ERROR= no images found. please check /data/img"); exit(); }
+  if(sets == null) { println("ERROR= no sets found. please check /data/sets"); exit(); }
+  grid.filesToTiles();
+  grid.filesToCompositions();
 
   Ani.init(this);  
 }
@@ -48,40 +43,18 @@ void setup() {
 void draw() {
   grid.update();
   grid.display();
-  push();
-  fill(0);
-  rect(0, 0, 200, 20);
-  fill(255);
-  text("available=" + tiles.size(), 20, 20);
-  pop();
-  
-  /*
-  background(0);
-  
-  if(millis() - timestamp > random_interval) {
-    timestamp = millis();
-    random_display = random(1, 6);
-    
-    for(int i = 0; i<random_display; i++) {
-      if(millis() - big_timestamp > big_interval) {
-        println("make big");
-        big_timestamp = millis();
-        tiles.get((int)random(0, 12)).big();
-      }
-      tiles.get((int)random(0, 12)).pulse();  
-    }
+
+  // debug info
+  if(debug) {
+    push();
+    fill(0);
+    rect(0, 0, 200, 30);
+    fill(255);
+    text("available=" + tiles.size(), 10, 10);
+    text("state=" + grid.getState(), 10, 20);
+
+
+    pop();
   }
-  
-  for(int i = 0; i < tiles.size(); i++) {
-    Tile tile = tiles.get(i);
-    tile.update();
-    tile.display();
-  }
-  
-  fill(255);
-  rect(0, 0, 40, 40);
-  fill(0);
-  text((int)random_display, 20, 20);
-  */
-  
+
 }
