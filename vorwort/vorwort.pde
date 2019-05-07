@@ -1,4 +1,6 @@
- import java.util.*;
+import java.util.*;
+import de.looksgood.ani.*;
+
 
 ArrayList<Tile> tiles = new ArrayList<Tile>();
 Grid grid;
@@ -15,11 +17,10 @@ float random_display = random(1, 6);
 long big_timestamp = 0;
 long big_interval = 5000;
 
-String path = "img";
 File folder;
 String[] filenames;
 StringList files = new StringList();
-StringList available = new StringList();
+StringList sets = new StringList();
 boolean foundFiles = false;
 List l = new ArrayList();
 File[] pics;
@@ -27,21 +28,32 @@ File[] pics;
 
 void setup() {
   size(960, 480);
+
+
+
   background(0);
   grid = new Grid(width, height);
   
   pic_w = width/4;
   pic_h = height/3;
     
-  initList();
+  files = initList("img", "jpg,JPG,png,PNG");
+  sets = initList("sets", "json");
   imagesToTiles();
-  available = duplicateList(files);
-  
+  //available = duplicateList(files);
+
+  Ani.init(this);  
 }
 
 void draw() {
   grid.update();
   grid.display();
+  push();
+  fill(0);
+  rect(0, 0, 200, 20);
+  fill(255);
+  text("available=" + tiles.size(), 20, 20);
+  pop();
   
   /*
   background(0);

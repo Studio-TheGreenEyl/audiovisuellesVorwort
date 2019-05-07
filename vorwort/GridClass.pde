@@ -31,9 +31,7 @@ class Grid {
     pg.background(0);
     pg.endDraw();
   }
-  
-
-  
+    
   void update() {
     
     switch(state) {
@@ -77,7 +75,16 @@ class Grid {
           //field = (int)map(field, 0, 1, 1, 0);
           
           if(field == 1) {
-            pg.image(tiles.get((int)random(0, tiles.size()-1)).getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
+            PImage n = getNextTile();
+            if(n == null) {
+              println();
+              println("# tiles empty. refill pool.");
+              imagesToTiles();
+              n = getNextTile();
+              
+            }
+            //pg.image(tiles.get((int)random(0, tiles.size()-1)).getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
+            pg.image(n, x*pic_w, y*pic_h, pic_w*1, pic_h*1);
           }
           else {
             pg.push();
