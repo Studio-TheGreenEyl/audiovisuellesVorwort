@@ -1,9 +1,11 @@
 class Grid {
+  ArrayList<Tile> tiles = new ArrayList<Tile>();
+  ArrayList<Composition> compositions = new ArrayList<Composition>();
   int w;
   int h;
   PGraphics pg;
   
-  int state = 3;
+  int state = CHANCE;
   
   static final int RANDOM_PATTERN = 0;
   static final int STEP = 1;
@@ -13,16 +15,26 @@ class Grid {
   
   JSONArray patterns;
   JSONObject jsonPattern = null;
+
+  StringList files = new StringList();
+  StringList sets = new StringList();
   
   int currentPattern = 0;
+  Tile currentTile = null;
+  Tile blackTile = null;
   int patternIndex = 12;
   IntList patternLinear;
 
   Composition currentComposition = null;
   
   long timestamp = 0;
-  long interval = 250;
+  long interval = 2000;
 
+  int compositionCounter = 0;
+  int chanceMaximum = 4;
+  int chanceCounter = chanceMaximum; // 20% anfangschance
+
+  boolean nextImage = true;
 
   
   public Grid(int _w, int _h) {
@@ -34,6 +46,7 @@ class Grid {
     pg.beginDraw();
     pg.background(0);
     pg.endDraw();
+    blackTile = new Tile(9999999, "assets/blackTile.jpg");
   }
     
   void update() {
@@ -41,26 +54,34 @@ class Grid {
     switch(state) {
       
       case CHANCE:
-        // 50:50 chance entweder in ein zufälliges pattern zu steuern oder ein set zu bekommen
-        /*
-          route 1: zufall
-          - random_pattern
-          - step /finite pool of images
-          - chance
-        */
+        if(millis() - timestamp < interval) return;
+        timestamp = millis();
+        int random = (int)random(0, chanceCounter);
+        if(debug) print("chanceCounter=" + chanceCounter + " / random= "+ random + " / ");
+        chanceCounter--;
 
-        /*
-          route 2: compositions
-          - random_composition /finite pool of sets
-          - composition
-        */
+        if(random == 0) {
+          chanceCounter = chanceMaximum;
+          state = RANDOM_COMPOSITION;
+          break;
+        } else {
+          if(debug) println("random");
+        }
 
+        if(chanceCounter < 0) {
+          chanceCounter = chanceMaximum;
+          if(debug) println();
+          
+        }
+        state = RANDOM_PATTERN;
       break;
       
       case RANDOM_PATTERN:
         // pick a new (random) pattern
         // shuffles the order on how the images are displayed
-        delay(1000);
+        if(millis() - timestamp < interval) return;
+        timestamp = millis();
+
         if(patternIndex >= patternLinear.size()) {
           patternIndex = 0;
           currentPattern = (int)random(0, patterns.size()-1);
@@ -72,27 +93,23 @@ class Grid {
       break;
       
       case STEP:
-        if(millis() - timestamp > interval) {
-          if(patternIndex >= patternLinear.size()) {
-            state = RANDOM_PATTERN;
-            break;
-          }
+        if(patternIndex >= patternLinear.size()) {
+          state = CHANCE;
+          break;
+        }
+      
+        int step = patternLinear.get(patternIndex);
+        int x = (int)step%4;
+        int y = (int)step/4;
+
+        int field = getPatternCell(x, y);
+        pg.beginDraw();
         
-          timestamp = millis();
-          int step = patternLinear.get(patternIndex);
-          int x = (int)step%4;
-          int y = (int)step/4;
-          
-          JSONArray column = jsonPattern.getJSONArray("c"+x);
-          int[] values = column.getIntArray();
-          int field = values[y];
-         
-          pg.beginDraw();
-          
-          // invert black pattern
-          //field = (int)map(field, 0, 1, 1, 0);
-          
-          if(field == 1) {
+        // invert black pattern
+        //field = (int)map(field, 0, 1, 1, 0);
+        
+        if(field == 1) {
+          if(currentTile == null) {
             PImage n = getNextTile();
             if(n == null) {
               if(debug) {
@@ -101,38 +118,75 @@ class Grid {
               }
               filesToTiles();
               n = getNextTile();
-
             }
-            pg.image(n, x*pic_w, y*pic_h, pic_w*1, pic_h*1);
-          } else {
-            pg.push();
-            pg.fill(0);
-            pg.noStroke();
-            pg.rect(x*pic_w, y*pic_h, pic_w*1, pic_h*1);
-            pg.pop();
+          }
+
+          if(currentTile != null) {
+            currentTile.fade();
+            float opacity = currentTile.getOpacity();
+            pg.tint(255, opacity);
+            pg.image(currentTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
+            
+            if(opacity >= 255) {
+              nextImage = true;
+            }
           }
           
-          pg.endDraw();
-          patternIndex++;
+        } else {
+          blackTile.fade();
+          float opacity = blackTile.getOpacity();
+          pg.tint(255, opacity);
+          pg.image(blackTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
+          
+          if(opacity >= 255) {
+            nextImage = true;
+          }
         }
         
-        
+        pg.endDraw();
+        if(nextImage) {
+          patternIndex++;
+          nextImage = false;
+          blackTile.resetOpacity();
+          currentTile = null;
+        }        
       break;
 
       case RANDOM_COMPOSITION:
         // pick a new (random) composition
-        getNextComposition();
-        println("comps= "+ compositions.size());
+        if(debug) println("pick a new (random) composition");
+        if(millis() - timestamp < interval) return;
+        timestamp = millis();
+
+        if(compositionCounter <= 0) {
+          filesToCompositions();
+        }
+        currentComposition = getNextComposition();
+        if(debug) {
+          println("compCounter= " + compositionCounter);
+          println("compsSize= "+ compositions.size());
+          println("comp_id= " + currentComposition.getID());
+        }
         state = COMPOSITION;
       break;
 
       case COMPOSITION:
+        if(currentComposition == null) {
+          state = RANDOM_COMPOSITION;
+          break;
+        }
+        //println("updating");
+        currentComposition.update();
+        if(currentComposition.isFinished()) {
+          compositionCounter--;
+          state = CHANCE;
+          break;
+        }
       break;
-      
-      
+         
     }
   }
-  
+
   void display() {
     pg.beginDraw();
     //for(int x = 1; x<=4; x++) pg.line(x*pic_w, 0, x*pic_w, height);
@@ -141,6 +195,13 @@ class Grid {
     //pg.image(tiles.get(0).getDisplay(), 0, 0, pic_w*1, pic_h*1);
     pg.endDraw();
     image(pg, 0, 0);
+  }
+
+  int getPatternCell(int x, int y) {
+    JSONArray column = jsonPattern.getJSONArray("c"+x);
+    int[] values = column.getIntArray();
+    int field = values[y];
+    return field;
   }
   
   // shuffles the pattern so we can walk through it
@@ -159,68 +220,91 @@ class Grid {
   }
 
   void filesToCompositions() {
-    for(int i = 0; i<sets.size(); i++) compositions.add(new Composition(i, "sets/"+ sets.get(i), patterns));
+    compositionCounter = sets.size();
+    compositions = new ArrayList<Composition>();
+    for(int i = 0; i<sets.size(); i++) compositions.add(new Composition(i, "sets/"+ sets.get(i), patterns, pg));
   }
 
-PImage getNextTile() {
-  PImage p = null;
-  if(tiles.size() >= 2) { // wenn eine kleinste zufällige auswahl noch möglich ist
-    int randomTile = (int)random(0, tiles.size()-1);
-    if(debug) {
-      print("available= "+ tiles.size() + " / ");
-      println("random= "+ randomTile);
+  void init(String path0, String filetypes0, String path1, String filetypes1) {
+    files = grid.initList(path0, filetypes0);
+    sets = grid.initList(path1, filetypes1);
+    if(files == null) { println("ERROR= no images found. please check /data/img"); exit(); }
+    if(sets == null) { println("ERROR= no sets found. please check /data/sets"); exit(); }
+
+    filesToTiles();
+    filesToCompositions();
+  }
+
+  PImage getNextTile() {
+    PImage p = null;
+    if(tiles.size() >= 2) { // wenn eine kleinste zufällige auswahl noch möglich ist
+      int randomTile = (int)random(0, tiles.size()-1);
+      if(debug) {
+        print("available= "+ tiles.size() + " / ");
+        println("random= "+ randomTile);
+      }
+      currentTile = tiles.get(randomTile);
+      p = currentTile.getDisplay();
+
+      tiles.remove(randomTile);
     }
-    p = tiles.get(randomTile).getDisplay();
-    tiles.remove(randomTile);
+    return p;
   }
-  return p;
-}
 
-Composition getNextComposition() {
-  Composition comp = null;
-  if(compositions.size() >= 2) { // wenn eine kleinste zufällige auswahl noch möglich ist
-    int randomComp = (int)random(0, compositions.size()-1);
-    if(debug) {
-      print("available= "+ compositions.size() + " / ");
-      println("random= "+ randomComp);
+  Composition getNextComposition() {
+    Composition comp = null;
+    if(sets.size() == 1 || compositions.size() == 1) {
+      // anscheinend gibt es nur eine datei. diese benutzen wir dann
+      comp = compositions.get(0);
+    } else if(compositions.size() >= 2) { // wenn eine kleinste zufällige auswahl noch möglich ist
+      int randomComp = (int)random(0, compositions.size()-1);
+      if(debug) {
+        print("available= "+ compositions.size() + " / ");
+        println("random= "+ randomComp);
+        println();
+      }
+      comp = compositions.get(randomComp);
+      compositions.remove(randomComp);
     }
-    comp = compositions.get(randomComp);
-    compositions.remove(randomComp);
+    return comp;
   }
-  return comp;
-}
 
-// liste von dateien 
-StringList initList(String path, String filetypes) {
-  StringList list = new StringList();
-  File folder = dataFile(path);
-  File[] pics = folder.listFiles();
-  Arrays.sort(pics);
 
-  String[] types = split(filetypes, ",");
-  if(types.length < 1) return null;
+  // liste von dateien
+  StringList initList(String path, String filetypes) {
+    StringList list = new StringList();
+    File folder = dataFile(path);
+    File[] pics = folder.listFiles();
+    Arrays.sort(pics);
 
-  String[] filenames = new String[pics.length];
-  for (int i = 0; i < pics.length; filenames[i] = pics[i++].getPath());
-  
-  if(filenames.length > 0) {
-    for(int i = 0; i< filenames.length; i++) {
-      String[] splitter = split(filenames[i], '.');
-      boolean correctType = false;
-      for(int j = 0; j<types.length; j++) {
-        if(splitter.length > 1 && splitter[1].equals(types[j])) {
-          correctType = true;
-          break;
+    String[] types = split(filetypes, ",");
+    if(types.length < 1) return null;
+
+    String[] filenames = new String[pics.length];
+    for (int i = 0; i < pics.length; filenames[i] = pics[i++].getPath());
+    
+    if(filenames.length > 0) {
+      for(int i = 0; i< filenames.length; i++) {
+        String[] splitter = split(filenames[i], '.');
+        boolean correctType = false;
+        for(int j = 0; j<types.length; j++) {
+          if(splitter.length > 1 && splitter[1].equals(types[j])) {
+            correctType = true;
+            break;
+          }
+        }
+        if(correctType) { 
+          String[] absolutePath = split(filenames[i], '/');
+          list.append(absolutePath[absolutePath.length-1]);
         }
       }
-      if(correctType) { 
-        String[] absolutePath = split(filenames[i], '/');
-        list.append(absolutePath[absolutePath.length-1]);
-      }
     }
+
+    return list;
   }
 
-  return list;
-}
+  int getTilesSize() {
+    return tiles.size();
+  }
   
 }

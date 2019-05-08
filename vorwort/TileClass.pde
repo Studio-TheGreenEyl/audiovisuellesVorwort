@@ -8,16 +8,24 @@ class Tile {
   PImage p;
   int x;
   int y;
+
+  String filename;
    
   boolean pulse = false;
   
   long timeout = 0;
   long timeout_interval = 200;
   
+  Ani animate;
+  float opacity = 0;
+  float increase = 15;
   
-  Tile(int _id, String filename) {
+  Tile(int _id, String _filename) {
+    //animate = new Ani(this, 1*FPS, "y", height);
+    //animate = new Ani(this, 250, "opacity", 0);
     id = _id;
-    p = loadImage(filename);
+    p = loadImage(_filename);
+    filename = _filename;
   }
   
   void update() {     
@@ -49,6 +57,10 @@ class Tile {
   int getID() {
     return id;
   }
+
+  String getFilename() {
+    return filename;
+  }
   
   void pulse() {
     if(millis() - timeout > timeout_interval) {
@@ -60,6 +72,20 @@ class Tile {
   
   int getTime() {
     return (millis()-(int)timeout)/1000;
+  }
+
+  void fade() {
+    //movement.to(this, animationLength*FPS, "y", y-getBoxHeight());
+    opacity += increase;
+    if(opacity > 255) opacity = 255;
+  }
+
+  float getOpacity() {
+    return opacity;
+  }
+
+  void resetOpacity() {
+    opacity = 0;
   }
   
 } 
