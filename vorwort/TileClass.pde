@@ -1,5 +1,5 @@
 class Tile {
-  // digitale operationen die das original *nicht* kann
+  // erweitern um digitale operationen die das original *nicht* kann
   boolean invertColors = false;
   boolean flip = false;
   int rotate = 0;
@@ -16,9 +16,12 @@ class Tile {
   long timeout = 0;
   long timeout_interval = 200;
   
-  Ani animate;
   float opacity = 0;
-  float increase = 15;
+  float increase = 5;
+
+  int faded = 0;
+
+  boolean isBlackTile = false;
   
   Tile(int _id, String _filename) {
     //animate = new Ani(this, 1*FPS, "y", height);
@@ -26,6 +29,7 @@ class Tile {
     id = _id;
     p = loadImage(_filename);
     filename = _filename;
+    if(filename.equals("assets/blackTile.jpg")) isBlackTile = true;
   }
   
   void update() {     
@@ -76,8 +80,14 @@ class Tile {
 
   void fade() {
     //movement.to(this, animationLength*FPS, "y", y-getBoxHeight());
+
+    faded++;
+
     opacity += increase;
-    if(opacity > 255) opacity = 255;
+    if(opacity > 255) {
+      opacity = 255;
+    }
+    //println("faded= "+ faded + " / " + opacity);
   }
 
   float getOpacity() {
@@ -85,6 +95,7 @@ class Tile {
   }
 
   void resetOpacity() {
+    faded = 0;
     opacity = 0;
   }
   

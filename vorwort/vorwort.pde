@@ -1,31 +1,23 @@
 import java.util.*;
-import de.looksgood.ani.*;
-
-
 
 Grid grid;
 PFont font;
-
-int timestamps[] = new int[12];
 
 int pic_w = 480;
 int pic_h = 320;
 
 long timestamp = 0;
-
-
-
 boolean debug = true;
+boolean play = true;
+boolean record = true;
 
 
 void setup() {
-  size(1920, 960);
+  size(1920, 1080);
   background(0);
-  Ani.init(this);
 
   font = loadFont("fonts/Iosevka-Term-11.vlw");
   textFont(font, 11);
-
 
   grid = new Grid(width, height);
   
@@ -33,15 +25,16 @@ void setup() {
   pic_h = height/3;
   
   grid.init("img", "jpg,JPG,png,PNG,tif", "sets", "json");
-  
-  //Ani.setDefaultTimeMode(Ani.FRAMES);
 }
 
 void draw() {
   grid.update();
   grid.display();
 
-  // debug info
+  if(record) {
+      saveFrame("data/export/e-######.png");
+  }
+
   if(debug) {
     push();
     fill(0);
@@ -51,5 +44,7 @@ void draw() {
     text("state=" + grid.getState(), 10, 30);
     pop();
   }
+
+
 
 }

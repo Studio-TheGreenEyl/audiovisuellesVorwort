@@ -8,8 +8,10 @@ void keyPressed() {
   } else {
     if (key == 'd' || key == 'D') {
         debug = !debug;
-    } else if (key == 'g' || key == 'G') {
-        // grid?
+    } else if (key == ' ') {
+        play = !play;
+    } else if (key == 'r' || key == 'R') {
+      record = !record;
     }
   }
 }

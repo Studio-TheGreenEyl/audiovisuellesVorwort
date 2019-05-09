@@ -22,7 +22,7 @@ class Composition {
 	long interval = 250;
 
 	boolean finished = false;
-	boolean nextImage = true;
+	boolean nextImage = false;
 
 	int avoid_x_start = 0;
 	int avoid_y_start = 0;
@@ -58,6 +58,7 @@ class Composition {
 	}
 
 	void update() {
+		//println(patternIndex + " / " + patternLinear.size());
 		if(!imagesLoaded) {
 			loadImages();
 			imagesLoaded = true;
@@ -79,6 +80,7 @@ class Composition {
 				if(currentTile != null) {
 					currentTile.fade();
 		            float opacity = currentTile.getOpacity();
+		            
 		            pg.tint(255, opacity);
 		            if(hasBig) {
 		            	if(bigImg == currentTile.getID()) {
@@ -91,29 +93,39 @@ class Composition {
 		            } else {
 		            	pg.image(currentTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
 		            }
-
+		            
 		            if(opacity >= 255) {
+		            	if(debug) {
+		            		println("switching to next image. last opacity was= "+ opacity);
+              				println();
+              			}
 				        nextImage = true;
         			}
 				}
 			} else {
-			  blackTile.fade();
-	          float opacity = blackTile.getOpacity();
-	          pg.tint(255, opacity);
-	          if(hasBig) {
-	          	if( !rectRect(avoid_x_start, avoid_y_start, avoid_x_end, avoid_y_end, x*pic_w, y*pic_h, pic_w*1, pic_h*1) ) {
-	          		pg.image(blackTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
-	          	} else {
-	          		nextImage = true;
-	          	}
-	          } else {
-	          	pg.image(blackTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
-	          }
-	          
-	          if(opacity >= 255) {
-	            nextImage = true;
-	          }		
+				blackTile.fade();
+	        	float opacity = blackTile.getOpacity();
+
+	        	//pg.tint(255, opacity);
+				if(hasBig) {
+					if( !rectRect(avoid_x_start, avoid_y_start, avoid_x_end, avoid_y_end, x*pic_w, y*pic_h, pic_w*1, pic_h*1) ) {
+	          			pg.image(blackTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
+					} else {
+	          			nextImage = true;
+					}
+				} else {
+					pg.image(blackTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
+				}
+				
+	          	if(opacity >= 255) {
+	          		if(debug) {
+						println("switching to next image. last opacity was= "+ opacity);
+						println();
+					}
+					nextImage = true;
+				}		
 			}
+			pg.noTint();
 			pg.endDraw();
 
 			if(nextImage) {

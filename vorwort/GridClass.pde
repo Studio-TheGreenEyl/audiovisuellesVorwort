@@ -50,7 +50,7 @@ class Grid {
   }
     
   void update() {
-    
+    if(!play) return;
     switch(state) {
       
       case CHANCE:
@@ -77,8 +77,6 @@ class Grid {
       break;
       
       case RANDOM_PATTERN:
-        // pick a new (random) pattern
-        // shuffles the order on how the images are displayed
         if(millis() - timestamp < interval) return;
         timestamp = millis();
 
@@ -124,10 +122,15 @@ class Grid {
           if(currentTile != null) {
             currentTile.fade();
             float opacity = currentTile.getOpacity();
+            
             pg.tint(255, opacity);
             pg.image(currentTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
             
             if(opacity >= 255) {
+              if(debug) {
+                println("switching to next image. last opacity was= "+ opacity);
+                println();
+              }
               nextImage = true;
             }
           }
@@ -135,10 +138,15 @@ class Grid {
         } else {
           blackTile.fade();
           float opacity = blackTile.getOpacity();
+          
           pg.tint(255, opacity);
           pg.image(blackTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
           
           if(opacity >= 255) {
+            if(debug) {
+              println("switching to next image. last opacity was= "+ opacity);
+              println();
+            }
             nextImage = true;
           }
         }
@@ -152,11 +160,11 @@ class Grid {
         }        
       break;
 
-      case RANDOM_COMPOSITION:
-        // pick a new (random) composition
-        if(debug) println("pick a new (random) composition");
+      case RANDOM_COMPOSITION:       
         if(millis() - timestamp < interval) return;
         timestamp = millis();
+
+        if(debug) println("pick a new (random) composition");
 
         if(compositionCounter <= 0) {
           filesToCompositions();
@@ -188,12 +196,12 @@ class Grid {
   }
 
   void display() {
-    pg.beginDraw();
+    //pg.beginDraw();
     //for(int x = 1; x<=4; x++) pg.line(x*pic_w, 0, x*pic_w, height);
     //for(int y = 1; y<=3; y++) pg.line(0, y*pic_h, width, y*pic_h);
     
     //pg.image(tiles.get(0).getDisplay(), 0, 0, pic_w*1, pic_h*1);
-    pg.endDraw();
+    //pg.endDraw();
     image(pg, 0, 0);
   }
 
@@ -265,6 +273,7 @@ class Grid {
       }
       comp = compositions.get(randomComp);
       compositions.remove(randomComp);
+      
     }
     return comp;
   }
