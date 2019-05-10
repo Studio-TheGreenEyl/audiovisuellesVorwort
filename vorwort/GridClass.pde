@@ -84,7 +84,7 @@ class Grid {
           patternIndex = 0;
           currentPattern = (int)random(0, patterns.size()-1);
            
-          jsonPattern = patterns.getJSONObject(currentPattern); 
+          jsonPattern = patterns.getJSONObject(currentPattern);
           initPatternList();
         }
         state = STEP;

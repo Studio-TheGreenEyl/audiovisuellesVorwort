@@ -32,7 +32,7 @@ void draw() {
   grid.display();
 
   if(record) {
-      saveFrame("data/export/e-######.png");
+      //saveFrame("data/export/e-######.png");
   }
 
   if(debug) {
