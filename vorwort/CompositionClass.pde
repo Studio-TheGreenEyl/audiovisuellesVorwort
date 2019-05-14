@@ -50,8 +50,8 @@ class Composition {
 			avoid_y_end = pic_h*bigFactor;
 		}
 		if(debug) {
-			println(jsonPattern);
-			println(data);
+			//println(jsonPattern);
+			//println(data);
 		}
 		initPatternList();
 		blackTile = new Tile(9999999, "assets/blackTile.jpg");
@@ -65,7 +65,7 @@ class Composition {
 		}
 		if(patternIndex >= patternLinear.size()) {
 			finished = true;
-		} else {
+		} else if(imagesLoaded) {
 			int step = patternLinear.get(patternIndex);
 			int x = (int)step%4;
 			int y = (int)step/4;
@@ -95,10 +95,6 @@ class Composition {
 		            }
 		            
 		            if(opacity >= 255) {
-		            	if(debug) {
-		            		println("switching to next image. last opacity was= "+ opacity);
-              				println();
-              			}
 				        nextImage = true;
         			}
 				}
@@ -118,10 +114,6 @@ class Composition {
 				}
 				
 	          	if(opacity >= 255) {
-	          		if(debug) {
-						println("switching to next image. last opacity was= "+ opacity);
-						println();
-					}
 					nextImage = true;
 				}		
 			}

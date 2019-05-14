@@ -12,23 +12,9 @@ void keyPressed() {
         play = !play;
     } else if (key == 'r' || key == 'R') {
       record = !record;
+    } else if (key == 'p' || key == 'P') {
+        drawOnScreen = !drawOnScreen;
+        println("drawOnScreen= " + drawOnScreen);
     }
   }
 }
-
-/*
-switch(bigPosition) {
-  case 0:
-    image(p, 0*pic_w, 0*pic_h, pic_w*2, pic_h*2);
-  break;
-  case 1:
-    image(p, 2*pic_w, 0*pic_h, pic_w*2, pic_h*2);
-  break;
-  case 2:
-    image(p, 0*pic_w, 2*pic_h, pic_w*2, pic_h*2);
-  break;
-  case 3:
-    image(p, 2*pic_w, 2*pic_h, pic_w*2, pic_h*2);
-  break;
-  }
-*/

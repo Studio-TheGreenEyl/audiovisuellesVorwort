@@ -10,7 +10,8 @@ long timestamp = 0;
 boolean debug = true;
 boolean play = true;
 boolean record = true;
-
+boolean exitOnLastRandomImage = true;
+boolean drawOnScreen = true;
 
 void setup() {
   size(1920, 1080);
@@ -32,16 +33,24 @@ void draw() {
   grid.display();
 
   if(record) {
-      //saveFrame("data/export/e-######.png");
+      grid.save();
+      
+      push();
+      stroke(255,0,0);
+      noFill();
+      rect(2,2,width-5,height-5);
+      pop();
+      
   }
 
   if(debug) {
     push();
     fill(0);
-    rect(0, 0, 100, 40);
+    rect(0, 0, 100, 50);
     fill(255);
     text("available=" + grid.getTilesSize(), 10, 20);
     text("state=" + grid.getState(), 10, 30);
+    text("comps=" + grid.getAvailableCompositions(), 10, 40);
     pop();
   }
 

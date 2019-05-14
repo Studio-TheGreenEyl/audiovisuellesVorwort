@@ -31,10 +31,12 @@ class Grid {
   long interval = 2000;
 
   int compositionCounter = 0;
-  int chanceMaximum = 4;
+  int chanceMaximum = 12;
   int chanceCounter = chanceMaximum; // 20% anfangschance
 
   boolean nextImage = true;
+
+  int saveCount = 0;
 
   
   public Grid(int _w, int _h) {
@@ -114,6 +116,7 @@ class Grid {
                 println();
                 println("# tiles empty. refill pool.");
               }
+              if(exitOnLastRandomImage) exit();
               filesToTiles();
               n = getNextTile();
             }
@@ -127,10 +130,6 @@ class Grid {
             pg.image(currentTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
             
             if(opacity >= 255) {
-              if(debug) {
-                println("switching to next image. last opacity was= "+ opacity);
-                println();
-              }
               nextImage = true;
             }
           }
@@ -143,10 +142,6 @@ class Grid {
           pg.image(blackTile.getDisplay(), x*pic_w, y*pic_h, pic_w*1, pic_h*1);
           
           if(opacity >= 255) {
-            if(debug) {
-              println("switching to next image. last opacity was= "+ opacity);
-              println();
-            }
             nextImage = true;
           }
         }
@@ -196,13 +191,13 @@ class Grid {
   }
 
   void display() {
-    //pg.beginDraw();
-    //for(int x = 1; x<=4; x++) pg.line(x*pic_w, 0, x*pic_w, height);
-    //for(int y = 1; y<=3; y++) pg.line(0, y*pic_h, width, y*pic_h);
-    
-    //pg.image(tiles.get(0).getDisplay(), 0, 0, pic_w*1, pic_h*1);
-    //pg.endDraw();
-    image(pg, 0, 0);
+    if(drawOnScreen) image(pg, 0, 0);
+  }
+
+  void save() {
+    pg.save("data/export/exp-" + nf(saveCount, 8) + ".jpg");
+    saveCount++;
+
   }
 
   int getPatternCell(int x, int y) {
@@ -314,6 +309,10 @@ class Grid {
 
   int getTilesSize() {
     return tiles.size();
+  }
+
+  int getAvailableCompositions() {
+    return compositions.size();
   }
   
 }
