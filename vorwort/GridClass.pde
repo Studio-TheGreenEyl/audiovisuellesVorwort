@@ -195,7 +195,7 @@ class Grid {
   }
 
   void save() {
-    pg.save("data/export/exp-" + nf(saveCount, 8) + ".jpg");
+    pg.save("data/export/exp-" + nf(saveCount, 8) + ".tga");
     saveCount++;
 
   }
